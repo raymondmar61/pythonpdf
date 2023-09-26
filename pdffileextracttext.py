@@ -216,3 +216,84 @@ print(pdffilewithtables[0][pdffilewithtables[0].Age > 30])
 1  Olivia   38  Accountant
 2     Bob   68  Accountant
 '''
+
+#PyPDF2 Crash Course - Working with PDFs in Python [2023] [OdIHUdQ1-eQ]
+import PyPDF2 as pdf
+from PyPDF2 import PdfReader, PdfWriter
+# print(pdf.__version__) #print 3.0.1.  RM:  YouTuber using 3.0.1.
+# print(dir(pdf)) #print ['DocumentInformation', 'PageObject', 'PageRange', 'PaperSize', 'PasswordType', 'PdfFileMerger', 'PdfFileReader', 'PdfFileWriter', 'PdfMerger', 'PdfReader', 'PdfWriter', 'Transformation', '__all__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__', '__spec__', '__version__', '__warningregistry__', '_cmap', '_codecs', '_encryption', '_merger', '_page', '_protocols', '_reader', '_security', '_utils', '_version', '_writer', 'constants', 'errors', 'filters', 'generic', 'pagerange', 'papersizes', 'parse_filename_page_ranges', 'types', 'warnings', 'xmp'].  These are the methods.
+#Summary:  PyPDF2 opens the pdf file.  Working with the pdf file PdfReader reads the pdf file, PdfWriter writes the pdf file split file extract file, and PdfMerger merges the pdf file join file.
+fileopenpdf = open("NativityExample.pdf", "rb")
+readerreadpdf = PdfReader(fileopenpdf)
+infopdffile = readerreadpdf.metadata
+print(infopdffile) #print {'/Title': 'Nativity_Example', '/Producer': 'Skia/PDF m110 Google Docs Renderer'}
+print(infopdffile.title) #print 'Nativity_Example.  RM:  the title is different than the file name NativityExample.pdf.
+print(readerreadpdf.pages) #print <PyPDF2._page._VirtualList object at 0x7fde65f10ac0>
+print(len(readerreadpdf.pages)) #print 3.  Number of pages.
+extractfirstpage = readerreadpdf.pages[0].extract_text()
+print(extractfirstpage) #print The nativity of Jesus, nativity of Christ, birth of Jesus or birth of Christ is described in the biblical gospels of Luke and Matthew . The two accounts agree that Jesus was born in Bethlehem in . . .
+def extracttextfrompdf(pdffile):
+    with open(pdffile, "rb") as fobject:
+        readerreadpdf = PdfReader(pdffile)
+        resultslist = []
+        for i in range(0, len(readerreadpdf.pages)):
+            selectedpageextracttext = readerreadpdf.pages[i].extract_text()
+            print(selectedpageextracttext)
+            resultslist.append(selectedpageextracttext)
+        return " ".join(resultslist) #convert list to a single document
+
+
+extracttextfrompdf("NativityExample.pdf") #return The nativity of Jesus, nativity of Christ, birth of Jesus or birth of Christ is described in the biblical gospels of Luke and Matthew . The two accounts agree that Jesus was born in Bethlehem in . . .
+#Split pdf file into separate pages.
+import os
+def splitpdffile(pdffile):
+    with open(pdffile, "rb") as fobject:
+        readerreadpdf = PdfReader(pdffile)
+        #Exact each page
+        for pagenumber in range(0, len(readerreadpdf.pages)):
+            selectedpageextracttext = readerreadpdf.pages[pagenumber]
+            writerwritepdf = PdfWriter()
+            writerwritepdf.add_page(selectedpageextracttext)
+            filename = os.path.splitext(pdffile)[0]
+            outputfilename = f"{filename}{pagenumber+1}.pdf"
+            #Save the extract to compile to a new pdf file
+            with open(outputfilename, "wb") as outputobject:
+                writerwritepdf.write(outputobject)
+            print("Created a pdf file:{}".format(outputfilename))
+
+
+splitpdffile("NativityExample.pdf") #return Created a pdf file:NativityExample0.pdf\n Created a pdf file:NativityExample1.pdf\n Created a pdf file:NativityExample2.pdf
+#Extract page range
+def extractselectedpages(pdffile, startpage: int, endpage: int):
+    with open(pdffile, "rb") as fobject:
+        readerreadpdf = PdfReader(pdffile)
+        writerwritepdf = PdfWriter()
+        for pagenumber in range(startpage - 1, endpage):
+            selectedpageextracttext = readerreadpdf.pages[pagenumber]
+            writerwritepdf.add_page(selectedpageextracttext)
+            filename = os.path.splitext(pdffile)[0]
+            outputfilename = f"{filename}page{startpage}to{endpage}.pdf"
+        with open(outputfilename, "wb") as outputobject:
+            writerwritepdf.write(outputobject)
+        print("Extracted {} file to {}".format(pdffile, outputfilename))
+
+
+extractselectedpages("NativityExample.pdf", 1, 2) #return Extracted NativityExample.pdf file to NativityExamplepage1to2.pdf
+#Extract last page or extract a page
+def extractonepage(pdffile, pagenumber):
+    with open(pdffile, "rb") as fobject:
+        readerreadpdf = PdfReader(pdffile)
+        writerwritepdf = PdfWriter()
+        selectedpageextracttext = readerreadpdf.pages[pagenumber - 1]
+        writerwritepdf.add_page(selectedpageextracttext)
+        filename = os.path.splitext(pdffile)[0]
+        outputfilename = f"{filename}page{pagenumber}.pdf"
+        with open(outputfilename, "wb") as outputobject:
+            writerwritepdf.write(outputobject)
+        print("Extracted {} file page {}".format(outputfilename, pagenumber))
+
+
+extractlastpage = len(readerreadpdf.pages)
+extractonepage("NativityExample.pdf", extractlastpage) #return Extracted NativityExamplepage3.pdf file page 3
+extractanyonepage = 2
+extractonepage("NativityExample.pdf", extractanyonepage) #return Extracted NativityExamplepage2.pdf file page 2
