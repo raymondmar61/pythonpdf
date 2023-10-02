@@ -219,7 +219,7 @@ print(pdffilewithtables[0][pdffilewithtables[0].Age > 30])
 
 #PyPDF2 Crash Course - Working with PDFs in Python [2023] [OdIHUdQ1-eQ]
 import PyPDF2 as pdf
-from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 # print(pdf.__version__) #print 3.0.1.  RM:  YouTuber using 3.0.1.
 # print(dir(pdf)) #print ['DocumentInformation', 'PageObject', 'PageRange', 'PaperSize', 'PasswordType', 'PdfFileMerger', 'PdfFileReader', 'PdfFileWriter', 'PdfMerger', 'PdfReader', 'PdfWriter', 'Transformation', '__all__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__', '__spec__', '__version__', '__warningregistry__', '_cmap', '_codecs', '_encryption', '_merger', '_page', '_protocols', '_reader', '_security', '_utils', '_version', '_writer', 'constants', 'errors', 'filters', 'generic', 'pagerange', 'papersizes', 'parse_filename_page_ranges', 'types', 'warnings', 'xmp'].  These are the methods.
 #Summary:  PyPDF2 opens the pdf file.  Working with the pdf file PdfReader reads the pdf file, PdfWriter writes the pdf file split file extract file, and PdfMerger merges the pdf file join file.
@@ -297,3 +297,53 @@ extractlastpage = len(readerreadpdf.pages)
 extractonepage("NativityExample.pdf", extractlastpage) #return Extracted NativityExamplepage3.pdf file page 3
 extractanyonepage = 2
 extractonepage("NativityExample.pdf", extractanyonepage) #return Extracted NativityExamplepage2.pdf file page 2
+#Merge pdf from a folder of pdf files
+def fetchpdffilesinfolder(folderpath):
+    targetpdffiles = []
+    for path, subdirectory, filenames in os.walk(folderpath): #Need subdirectory in for loop to prevent ValueError: too many values to unpack (expected 2)
+        for eachfilenames in filenames:
+            if eachfilenames.endswith(".pdf"):
+                targetpdffiles.append(os.path.join(path, eachfilenames))
+    return targetpdffiles
+
+
+print(fetchpdffilesinfolder("/home/mar/python")) #print ['/home/mar/python/NativityExamplepage3.pdf', '/home/mar/python/NativityExamplepage1to2.pdf', '/home/mar/python/fixsteamuserratingcharts.pdf', '/home/mar/python/NativityExample0.pdf', '/home/mar/python/NativityExample.pdf', '/home/mar/python/NativityExamplepage0to2.pdf', '/home/mar/python/loremwaldo.pdf', '/home/mar/python/NativityExample3.pdf', '/home/mar/python/neuralninesamplepdf.pdf', '/home/mar/python/56_power_query_tutorials.pdf', '/home/mar/python/NativityExample2.pdf', '/home/mar/python/NativityExample1.pdf', '/home/mar/python/NativityExamplepage2.pdf', '/home/mar/python/lorem.pdf']
+def mergepdffilesfromlist(pdffileslist, outputpdffilename="default.pdf"):
+    merger = PdfMerger()
+    with open(outputpdffilename, "wb") as fobject:
+        for eachpdffileslist in pdffileslist:
+            merger.append(eachpdffileslist)
+        merger.write(fobject)
+
+
+#Merge pdf from a list of pdf files in a folder
+pdflistfromfolder = fetchpdffilesinfolder("/home/mar/python")
+mergepdffilesfromlist(pdflistfromfolder)
+def mergepdffilesfromlistfiledirectory(filedirectory, pdffileslist, outputpdffilename="default.pdf"):
+    merger = PdfMerger()
+    with open(outputpdffilename, "wb") as fobject:
+        for eachpdffileslist in pdffileslist:
+            print(filedirectory + eachpdffileslist)
+            merger.append(eachpdffileslist)
+        merger.write(fobject)
+
+
+filedirectory = "/home/mar/python"
+pdflist = ["loremwaldo.pdf", "NativityExample.pdf"]
+mergepdffilesfromlistfiledirectory(filedirectory, pdflist)
+#Rotate pdf rotate page.  Rotation angle must be a multiple of 90.
+def rotatepdffile(pdffile, pagenumber: int, rotation: int=90):
+    pagenumber -= pagenumber
+    with open(pdffile, "rb") as fobject:
+        reader = PdfReader(fobject)
+        writer = PdfWriter()
+        writer.add_page(reader.pages[pagenumber])
+        writer.pages[pagenumber].rotate(rotation)
+        filename = os.path.splitext(pdffile)[0]
+        outputfilename = f"{filename}rotated{rotation}degrees.pdf"
+        with open(outputfilename, "wb") as outputobject:
+            writer.write(outputobject)
+        print("Rotated {} file to {}".format(pdffile, outputfilename))
+
+
+rotatepdffile("loremwaldo.pdf", 1)
