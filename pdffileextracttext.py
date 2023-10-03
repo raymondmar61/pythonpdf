@@ -1,5 +1,3 @@
-#import PyPDF2 #RM:  module version type pip show PyPDF2
-
 #Extract Text from PDF with Python [0B5N6Xt5K8Q]
 #from PyPDF2 import PdfFileReader #DeprecationError: PdfFileReader is deprecated and was removed in PyPDF2 3.0.0. Use PdfReader instead.  DeprecationError: PdfFileWriter is deprecated and was removed in PyPDF2 3.0.0. Use PdfWriter instead.  RM:  Moreover, the syntax changed.  Syntax errors and corrections returned when running the code and following the video.
 from PyPDF2 import PdfReader, PdfWriter
@@ -347,3 +345,122 @@ def rotatepdffile(pdffile, pagenumber: int, rotation: int=90):
 
 
 rotatepdffile("loremwaldo.pdf", 1)
+
+#Extract text, links, images, tables from Pdf with Python ｜ PyMuPDF, PyPdf, PdfPlumber tutorial [G0PApj7YPBo]
+from pypdf import PdfReader
+readpdffileobject = PdfReader("neuralninesamplepdf.pdf")
+numberofpages = len(readpdffileobject.pages)
+print(numberofpages) #print 1
+pageonepdffile = readpdffileobject.pages[0] #page 1 is index 0
+print(pageonepdffile.extract_text())
+'''
+NeuralNine Sample PDF File 
+ 
+This is an ordinary PDF File with some informaƟon. 
+ 
+Here are ﬁve names:  Mike, Sara, Bob, John, Emma 
+ 
+Here are six numbe rs:  100, 200, 4310, 233, 544, 122 
+ 
+Here is a table full of data: 
+ 
+Name Age Job 
+Mike 28 Programmer 
+Olivia 38 Accountant 
+Bob 68 Accountant 
+Sophia 24 Lawyer 
+Simon 25 Programmer 
+'''
+#For loop to extract text for all pages in pdf file
+for eachpage in range(0, numberofpages):
+    pdffilepagenumber = readpdffileobject.pages[eachpage]
+    print(pdffilepagenumber.extract_text())
+#For loop to extract images for all pages in pdf file
+for eachimage in pageonepdffile.images:
+    with open(eachimage.name, "wb") as fobject:
+        fobject.write(eachimage.data) #return Im1.jpg and Im2.png
+#Extract tables
+import pdfplumber
+with pdfplumber.open("neuralninesamplepdf.pdf") as fobject:
+    for eachtable in fobject.pages:
+        print(eachtable.extract_tables()) #print [[['Name', 'Age', 'Job'], ['Mike', '28', 'Programmer'], ['Olivia', '38', 'Accountant'], ['Bob', '68', 'Accountant'], ['Sophia', '24', 'Lawyer'], ['Simon', '25', 'Programmer']]]
+#Convert pdf to image
+import fitz #fitz module comes from pymupdf
+documentpdfobject = fitz.open("pythoninfiniteloopalistlinks.pdf")
+print(documentpdfobject.page_count) #print 2
+print(documentpdfobject.metadata) #print {'format': 'PDF 1.6', 'title': '', 'author': '', 'subject': '', 'keywords': '', 'creator': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36', 'producer': 'Skia/PDF m97', 'creationDate': 'D:20220127022807Z', 'modDate': "D:20231002223603-07'00'", 'trapped': '', 'encryption': None}
+pageonepdffile = documentpdfobject.load_page(0) #page 1 is index 0
+print(pageonepdffile.get_text())
+'''
+1/26/22, 6:28 PM
+python infinite loop a list - Google Search
+https://www.google.com/search?q=python+infinite+loop+a+list&oq=python+infinite+loop+a+list&aqs=chrome..69i57j0i22i30l3.9167j1j7&sourceid=chro…
+1/3
+About 13,500,000 results (0.62 seconds) 
+How can I in�nitely loop an iterator in Python, via a generator ...
+May 2, 2019 — You can iterate over a list, appending an item to it: somelist = [item1, item2,
+...
+'''
+convertpdftoimage = pageonepdffile.get_pixmap()
+convertpdftoimage.save(f"page{pageonepdffile.number+1}.jpg") #return page1.jpg
+#Extract links
+getalllinks = pageonepdffile.get_links()
+print(getalllinks) #print [{'kind': 2, 'xref': 26, 'from': Rect(86.0, 175.5, 363.9999694824219, 191.0), 'uri': 'https://stackoverflow.com/questions/12944882/how-can-i-infinitely-loop-an-iterator-in-python-via-a-generator-or-other', 'id': ''}, {'kind': 2, . . . }]
+print(len(getalllinks)) #print 18
+print(type(getalllinks)) #print <class 'list'>
+for eachgetalllinks in range(0, len(getalllinks)):
+    print(getalllinks[eachgetalllinks]) #print {'kind': 2, 'xref': 26, 'from': Rect(86.0, 175.5, 363.9999694824219, 191.0), 'uri': 'https://stackoverflow.com/questions/12944882/how-can-i-infinitely-loop-an-iterator-in-python-via-a-generator-or-other', 'id': ''}
+    print(type(getalllinks[eachgetalllinks])) #print <class 'dict'>
+    #Use get() method to get the value for uri
+    print(str(getalllinks[eachgetalllinks].get("uri"))) #print https://stackoverflow.com/questions/12944882/how-can-i-infinitely-loop-an-iterator-in-python-via-a-generator-or-other
+
+#Extracting data from PDF files using Python [y_ORF4FpZYo]
+import PyPDF2
+import re
+filenamepdf = "MS_2019.pdf"
+#documentpdfobject = PyPDF2.PdfFileReader(filenamepdf) ##PyPDF2.errors.DeprecationError: PdfFileReader is deprecated and was removed in PyPDF2 3.0.0. Use PdfReader instead.
+documentpdfobject = PyPDF2.PdfReader(filenamepdf)
+print(type(documentpdfobject)) #print <class 'PyPDF2._reader.PdfReader'>
+numberofpages = len(documentpdfobject.pages)
+print(numberofpages) #print 65
+searchterm = "independent"
+listpages = [] #Tuple key for listpages (all occurrences, page number)
+for pagenumber in range(0, numberofpages):
+    currentpage = documentpdfobject.pages[pagenumber]
+    textincurrentpage = currentpage.extract_text()
+    if re.findall(searchterm, textincurrentpage):
+        #print(re.findall(searchterm, textincurrentpage)) #print ['independent']\n ['independent']\n ['independent', 'independent']\n ['independent']
+        countpages = len(re.findall(searchterm, textincurrentpage))
+        listpages.append((countpages, pagenumber + 1))
+print(listpages) #print [(1, 1), (1, 3), (2, 30), (1, 31)].  One independent in page 1, one in page 3, two in page 30, and one in page 31.  Page 1 is index 0.
+totalpagescontainingsearchterm = len(listpages)
+print(totalpagescontainingsearchterm) #print 4
+totalwordcountsearchterm = [eachtuple[0] for eachtuple in listpages]
+print(totalwordcountsearchterm) #print [1, 1, 2, 1]
+print(sum(totalwordcountsearchterm)) #print 5
+print(f"The word {searchterm} was found {sum(totalwordcountsearchterm)} times on {totalpagescontainingsearchterm} pages.") #print The word independent was found 5 times on 4 pages.
+
+def createfunction(filenamepdf: str, searchterm: str):
+    documentpdfobject = PyPDF2.PdfReader(filenamepdf)
+    numberofpages = len(documentpdfobject.pages)
+    #print(numberofpages) #print 65
+    listpages = [] #Tuple key for listpages (all occurrences, page number)
+    for pagenumber in range(0, numberofpages):
+        currentpage = documentpdfobject.pages[pagenumber]
+        textincurrentpage = currentpage.extract_text()
+        if re.findall(searchterm, textincurrentpage):
+            countpages = len(re.findall(searchterm, textincurrentpage))
+            listpages.append((countpages, pagenumber + 1))
+    #print(listpages) #print [(1, 1), (1, 3), (2, 30), (1, 31)].  One independent in page 1, one in page 3, two in page 30, and one in page 31.  Page 1 is index 0.
+    totalpagescontainingsearchterm = len(listpages)
+    #print(totalpagescontainingsearchterm) #print 4
+    totalwordcountsearchterm = sum([eachtuple[0] for eachtuple in listpages])
+    #print(totalwordcountsearchterm) #print [1, 1, 2, 1]
+    return (totalwordcountsearchterm, totalpagescontainingsearchterm)
+
+
+filenamepdf = "MS_2019.pdf"
+searchterm = "independent"
+printresult = createfunction(filenamepdf, searchterm)
+print(printresult) #print (5, 4)
+print(f"The word {searchterm} was found {printresult[0]} times on {printresult[1]} pages.") #print The word independent was found 5 times on 4 pages.
